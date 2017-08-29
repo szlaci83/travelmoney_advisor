@@ -10,27 +10,12 @@ from sklearn import preprocessing, cross_validation, svm
 from sklearn.linear_model import LinearRegression
 from datetime import datetime
 from datetime import timedelta
-import pickle
+import pickle, json
 
-'''Quandl tickers'''
-currencies = {
-            'USD' :{
-                        'HUF' : 'BOE/XUDLBK35',
-                        'PLN' : 'BOE/XUDLBK49',
-                        'GBP' : 'BOE/XUDLGBD'
-                    },
-            'GBP' :{
-                        'HUF' : 'BOE/XUDLBK33',
-                        'PLN' : 'BOE/XUDLBK47'
-                    },
-            'EUR' :{
-                        'HUF' : 'BOE/XUDLBK34',
-                        'BGN' : 'ECB/EURBGN',
-                        'PLN' : 'BOE/XUDLBK48',
-                        'GBP' : 'BOE/XUDLSER'
-                    }
+def getCurrencies():
+    '''Load Quandl tickers from json file'''
+    return json.loads(open('currency_list.json').read())
 
-            }
 
 def create_plottable(dates, values):
     '''Creates plottable timestamps(dates) for the frontend
@@ -43,12 +28,13 @@ def create_plottable(dates, values):
     max_day = str(dates[values.index(max(values))])[:10]
     points = []
 
-    for date,value in zip(dates, values):
+    for date, value in zip(dates, values):
         temp = {}
         temp['x'] = (date.timestamp() * 1000)
         temp['y'] = round(value, 3)
         points.append(temp)
     return points, min_day, max_day
+
 
 def get_next_days(lastknownrate, no_of_days):
     '''
@@ -63,14 +49,15 @@ def get_next_days(lastknownrate, no_of_days):
     pos = lastknownrate.find('Name:') + 6
     date_str = lastknownrate[pos:pos + 10]
     date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-    date_obj = date_obj + timedelta(days= no_of_days+2)
+    date_obj = date_obj + timedelta(days=no_of_days + 2)
     i = 0
-    while i<no_of_days:
-        date_obj= date_obj + timedelta(days=1)
+    while i < no_of_days:
+        date_obj = date_obj + timedelta(days=1)
         if ((date_obj.weekday() != SATURDAY) & (date_obj.weekday() != SUNDAY)):
             dates.append(date_obj)
-            i=i+1
+            i = i + 1
     return dates
+
 
 def creation_date(path_to_file):
     """
@@ -88,7 +75,8 @@ def creation_date(path_to_file):
             # so we'll settle for when its content was last modified.
             return stat.st_mtime
 
-def download_data(currencyfrom, currencyto, save = False, silent = True ):
+
+def download_data(currencyfrom, currencyto, save=False, silent=True):
     '''Function to download currency exchange rate data from Quandl site.
     :param currencyfrom: the currency to change from
     :param currencyto: the currency to change to
@@ -96,17 +84,18 @@ def download_data(currencyfrom, currencyto, save = False, silent = True ):
     :param silent: if False, prints logs on stdout, default = True
     :return: dataframe with exchange rate data form Quandl.
     '''
-    df = quandl.get(currencies[currencyfrom][currencyto])
-    df.columns= [currencyto]
+    df = quandl.get(getCurrencies()[currencyfrom][currencyto])
+    df.columns = [currencyto]
 
     if save:
         filename = currencyfrom + '_to_' + currencyto + '.csv'
-        df.to_csv(filename , sep='\t', encoding='utf-8')
+        df.to_csv(filename, sep='\t', encoding='utf-8')
         if not silent:
             print('Currency info saved to:' + filename)
     return df
 
-def load_data(currencyfrom, currencyto, save = False, silent = True, refresh_interval = 1):
+
+def load_data(currencyfrom, currencyto, save=False, silent=True, refresh_interval=1):
     '''Function to download new data if the saved data is "too old" .
        NOTE: Use this instead of download_data for cacheing.
     :param currencyfrom: the currency to change from
@@ -116,21 +105,22 @@ def load_data(currencyfrom, currencyto, save = False, silent = True, refresh_int
     :param refresh_interval: sets the interval in days
     :return: dataframe with exchange rate data form Quandl.
     '''
-    #turn days into seconds
+    # turn days into seconds
     refresh_interval = refresh_interval * 86400
     filename = currencyfrom + '_to_' + currencyto + '.csv'
 
-    if not os.path.isfile(filename) or bool(math.floor(((time.time() - creation_date(filename)) / refresh_interval )) ):
+    if not os.path.isfile(filename) or bool(math.floor(((time.time() - creation_date(filename)) / refresh_interval))):
         if not silent:
             print('Download of ' + filename + ' triggered.')
         data = download_data(currencyfrom, currencyto, save, silent)
     else:
-        data = pd.DataFrame.from_csv(filename , sep='\t', encoding='utf-8')
-    data.columns= [currencyto]
+        data = pd.DataFrame.from_csv(filename, sep='\t', encoding='utf-8')
+    data.columns = [currencyto]
     return data
 
-def lin_reg_predict(currencyfrom, currencyto, forecast_out, save_ds = False,savemodel = False, silent = True, cache = True,
-                    train_a_lot = 1, retrain = False, refresh_interval = 1,):
+
+def lin_reg_predict(currencyfrom, currencyto, forecast_out, save_ds=False, savemodel=False, silent=True, cache=True,
+                    train_a_lot=1, retrain=False, refresh_interval=1, ):
     '''
     Function to predict out future currency rates.
     :param currencyfrom: the currency to change from
@@ -145,59 +135,60 @@ def lin_reg_predict(currencyfrom, currencyto, forecast_out, save_ds = False,save
     :param refresh_interval: refresh interval in days of the dataset if cacheing is on
     :return:predicted currency rates for "forecast_out" number of days
     '''
-    df = load_data(currencyfrom, currencyto, save_ds, silent, refresh_interval) if cache else download_data(currencyfrom, currencyto, save_ds, silent)
+    df = load_data(currencyfrom, currencyto, save_ds, silent, refresh_interval) if cache else download_data(
+        currencyfrom, currencyto, save_ds, silent)
     df = df[[currencyto]]
 
     # currency to forecast
     forecast_col = currencyto
-    df.fillna(-99999, inplace = True)
-    #how many days to forecast for
+    df.fillna(-99999, inplace=True)
+    # how many days to forecast for
     df['label'] = df[forecast_col].shift(-forecast_out)
 
-    df = df [[currencyto,'label',]]
+    df = df[[currencyto, 'label', ]]
 
-    x = np.array(df.drop(['label'],1))
+    x = np.array(df.drop(['label'], 1))
     maxrate = x.max()
 
     x = preprocessing.scale(x)
     x = x[:-forecast_out]
     x_lately = x[-forecast_out:]
-    df.dropna(inplace = True)
+    df.dropna(inplace=True)
     y = np.array(df['label'])
 
     currency_file = 'linreg_' + currencyfrom + '_to_' + currencyto + '.pickle'
-    #the model needs saving if the model for currency does not exist
+    # the model needs saving if the model for currency does not exist
     needs_saving = not os.path.isfile('./' + currency_file) or savemodel
 
     if needs_saving or retrain:
-        #if retrain is triggered the minimum training = 10
+        # if retrain is triggered the minimum training = 10
         if retrain:
             train_a_lot = max(10, train_a_lot)
         scores = {}
-        #train the classifier train_a_lot times (default = 1), and chose the optimal to be the model
+        # train the classifier train_a_lot times (default = 1), and chose the optimal to be the model
         # for train in train_a_lot:
         if not silent:
             print('Training the model ' + str(train_a_lot) + ' time(s).')
         for i in range(train_a_lot):
-            x_train, x_test, y_train, y_test = cross_validation.train_test_split(x,y, test_size=0.2, random_state=0)
-            clf = LinearRegression(n_jobs= -1) #n_jobs makes it threaded -1 as many as possible
+            x_train, x_test, y_train, y_test = cross_validation.train_test_split(x, y, test_size=0.2, random_state=0)
+            clf = LinearRegression(n_jobs=-1)  # n_jobs makes it threaded -1 as many as possible
             clf.fit(x_train, y_train)
-            #scores[( cross_validation.cross_val_score(clf, x, y, scoring='mean_squared_error', cv=loo,))] = clf
-            scores [clf.score(x_test, y_test).mean()] = clf
+            # scores[( cross_validation.cross_val_score(clf, x, y, scoring='mean_squared_error', cv=loo,))] = clf
+            scores[clf.score(x_test, y_test).mean()] = clf
         if not silent:
             print('The accuracies: ' + str(scores.keys()))
-        score =  max(scores)
+        score = max(scores)
         model = max(scores, key=scores.get)
     else:
         if not silent:
             print('Loading model from file.')
-        pickle_in = open(currency_file,'rb')
+        pickle_in = open(currency_file, 'rb')
         model = pickle.load(pickle_in)
 
-    #save the best model after training
+    # save the best model after training
     if needs_saving:
-        with open(currency_file,'wb') as f:
-            pickle.dump(model,f)
+        with open(currency_file, 'wb') as f:
+            pickle.dump(model, f)
         if not silent:
             print('Model saved as : ' + currency_file)
 
@@ -214,20 +205,24 @@ def lin_reg_predict(currencyfrom, currencyto, forecast_out, save_ds = False,save
     lastknownrate = df.iloc[-1]['label']
     accuracy = str(score)
 
-    return {'maxrate' : maxrate,
-            'lasknownrate' : lastknownrate,
-            'accuracy' : accuracy,
-            'forecasts' : forecasts,
-            'tosell' : maxday,
-            'tobuy' : minday
+    return {'maxrate': maxrate,
+            'lasknownrate': lastknownrate,
+            'accuracy': accuracy,
+            'forecasts': forecasts,
+            'tosell': maxday,
+            'tobuy': minday
             }
+
+
 def main():
     currencyfrom = 'GBP'
     currencyto = 'HUF'
     forecast_out = 5
-    prediction = lin_reg_predict(currencyfrom, currencyto, forecast_out, save_ds=True, savemodel=True, silent=False, cache=True,
-                    train_a_lot=1, retrain=False, refresh_interval=1)
+    prediction = lin_reg_predict(currencyfrom, currencyto, forecast_out, save_ds=True, savemodel=True, silent=False,
+                                 cache=True,
+                                 train_a_lot=1, retrain=False, refresh_interval=1)
     print(prediction)
+
 
 if __name__ == "__main__":
     main()

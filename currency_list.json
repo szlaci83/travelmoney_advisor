@@ -1,0 +1,18 @@
+{
+    "USD":{
+        "HUF":"BOE/XUDLBK35",
+        "PLN":"BOE/XUDLBK49",
+        "GBP":"BOE/XUDLGBD"
+       },
+    "GBP":{
+        "HUF":"BOE/XUDLBK33",
+        "PLN":"BOE/XUDLBK47"
+        },
+    "EUR":{
+        "HUF":"BOE/XUDLBK34",
+        "BGN":"ECB/EURBGN",
+        "PLN":"BOE/XUDLBK48",
+        "GBP":"BOE/XUDLSER"
+		}
+    
+}
