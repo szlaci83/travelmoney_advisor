@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="shortcut icon" href="http://laszloszoboszlai.me/travelmoney/favicon.ico" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Travelmoney advisor</title>
+
+    <meta property="og:site_name" content="Travelmoney advisor"/>
+    <meta property="site_name" content="Travelmoney advisor"/>
+    <meta property="og:description" content="Simple web aplication to help you select the best date to exchange your travelmoney
+                to get the best possible rate. In order to make this decision easier I have created
+                this web interface using a Flask based API and  machine learning, to find the best
+                date in the near future and display it as a graph too."/>
+
+    <meta property="description" content="Simple web aplication to help you select the best date to exchange your travelmoney
+                to get the best possible rate. In order to make this decision easier I have created
+                this web interface using a Flask based API and  machine learning, to find the best
+                date in the near future and display it as a graph too."/>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+<!-- Modal  -->
+<div id="Modal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title"><span class="glyphicon glyphicon-exclamation-sign"></span>Travel money advisor</h4>
+            </div>
+            <div class="modal-body construction">
+                Simple web aplication to help you select the best date to exchange your travelmoney
+                to get the best possible rate. In order to make this decision easier I have created
+                this web interface using a Flask based API and  machine learning, to find the best
+                date in the near future and display it as a graph too.
+                </br>
+                <h4>DISCLAIMER:</h4> Content contained on or made available through the website is not
+                intended to and does not constitute investment advice. Your use of the information
+                on the website or materials linked from the Web is at your own risk.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="form-group-lg">
+<h1><span class="label center-block label-default">Travel money advisor</span></h1>
+
+    <div class="row">
+        <div class="col-lg-4 text-center center-block">
+<div class="btn-group">
+    <button class="btn btn-default btn-lg dropdown-toggle" type="button" id="fromDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        Currency from
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" id="from" aria-labelledby="fromDropdownMenu">
+    </ul>
+</div>
+</div>
+        <div class="col-lg-4 center-block text-center">
+<div class="btn-group">
+
+    <button class="btn btn-default btn-lg dropdown-toggle" type="button" id="toDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        Currency to
+        <span class="caret"></span>
+    </button>
+
+    <ul class="dropdown-menu" id="todr" aria-labelledby="toDropdownMenu">
+
+    </ul>
+
+</div>
+        </div>
+
+        <div class="col-lg-4 center-block text-center">
+            <div class="btn-group">
+
+                <button class="btn btn-default btn-lg dropdown-toggle" type="button" id="daysDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Days to predict
+                    <span class="caret"></span>
+                </button>
+
+                <ul class="dropdown-menu" id="days" aria-labelledby="daysDropdownMenu">
+                    <li><a class="dropdown-item" href="#" id="1">1</a></li>
+                    <li><a class="dropdown-item" href="#" id="2">2</a></li>
+                    <li><a class="dropdown-item" href="#" id="3">3</a></li>
+                    <li><a class="dropdown-item" href="#" id="4">4</a></li>
+                    <li><a class="dropdown-item" href="#" id="5">5</a></li>
+                    <li><a class="dropdown-item" href="#" id="6">6</a></li>
+                    <li><a class="dropdown-item" href="#" id="7">7</a></li>
+                    <li><a class="dropdown-item" href="#" id="8">8</a></li>
+                    <li><a class="dropdown-item" href="#" id="9">9</a></li>
+                    <li><a class="dropdown-item" href="#" id="10">10</a></li>
+                    <li><a class="dropdown-item" href="#" id="11">11</a></li>
+                    <li><a class="dropdown-item" href="#" id="12">12</a></li>
+                    <li><a class="dropdown-item" href="#" id="13">13</a></li>
+                    <li><a class="dropdown-item" href="#" id="14">14</a></li>
+                    <li><a class="dropdown-item" href="#" id="15">15</a></li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
+
+<div class=".col-lg-4 .col-lg-offset-4 center-block text-center">
+	<button class="btn btn-default btn-lg" type="button" id="forecast">
+		Forecast <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
+	</button>
+
+</div>
+
+<div class="row">
+    <div class=".col-lg-4 .col-lg-offset-4 center-block text-center">
+    <div id="progressbar" class="hidden">
+        <div id="bar">10%</div>
+    </div>
+
+    <!--placeholder for the result  -->
+    <div id="result" class="alert alert-success hidden"></div>
+
+    </div>
+</div>
+
+    <div class="row align-items-center justify-content-center">
+    <div class="col-6 col-md-4 text-center">
+    <!--placeholder for the graph  -->
+    <div id="placeholder" style="width:500px;height:300px;margin-left:15px;margin-right:30px;margin-bottom:40px;"></div>
+    </div>
+
+    <div class="col-6 col-md-4 text-right">
+    <!--placeholder for the accuracy  -->
+    <div id="pie" style="height:250px;width:400px;margin-left:30px;margin-top:10px;margin-bottom:30px;"></div>
+    </div>
+
+        <div class="col-6 col-md-4 text-right">
+            <!--placeholder for the gauge  -->
+            <div id="gauge" style="height:250px;width:400px;margin-left:30px;margin-top:10px;margin-bottom:30px;"></div>
+        </div>
+
+    </div>
+
+    <div class="row">
+    <div id="footer">
+        <div class="container text-center navbar-fixed-bottom">
+            <p class="text-muted credit"> by Laszlo Szoboszlai 2017 © </p>
+            <p class="text-muted credit danger">Note: The server logs IP addresses for usage monitoring purposes!!!</p>
+        </div>
+    </div>
+    </div>
+</div>
+</div>
+
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.js"></script>
+<!-- JS for the graphs -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.0/morris.min.js"></script>
+<!-- JS for gauge -->
+<script src="js/justgage.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="js/bootstrap.min.js"></script>
+<script src="js/controller.js" ></script>
+</body>
+</html>

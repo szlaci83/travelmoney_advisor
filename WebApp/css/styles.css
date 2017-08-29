@@ -1,0 +1,81 @@
+body {
+    /* background-color: aqua; */
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+    background-image: url("hand.png");
+    background-size: cover;
+   // background-color: #DFBFBF;
+}
+
+.label-default{
+    background-color: darkcyan;
+}
+
+.btn-default{
+    background-color: cadetblue;
+}
+
+
+#Modal {
+    background-color:  #222;
+}
+.modal-backdrop {
+    background-color: antiquewhite;
+}
+
+#pie{
+    margin-left: 30px;
+}
+
+#forecast{
+    margin-top: 20px;
+    width: 200px;
+}
+
+#progressbar{
+    margin-top: 10px;
+    margin-left: 10%;
+	width: 80%;
+    background-color: #ddd;
+}
+
+#bar{
+	width: 10%;
+	height: 30px;
+	background-color: #4cae4c;
+	text-align: center;
+	line-height: 30px;
+	color: white;
+}
+
+.hidden { display: none; }
+
+#result{
+    margin-top: 10px;
+}
+.navbar-fixed-bottom{
+    margin-top:25px;
+    color: #122b40;
+    text-align: center;
+    vertical-align: middle;
+    font-family: ‘Book Antiqua’,‘Palatino Linotype’, Palatino, serif;
+    background-color: darkseagreen;
+    background-size:cover;
+    background-position:center;
+    width:100%;
+}
+
+.danger{
+    background-color: hotpink;
+    color: #122b40;
+}
+
+.dropdown-toggle{
+    margin-top: 12px;
+    width: 200px;
+}
+
+
+
