@@ -119,13 +119,14 @@ def load_data(currencyfrom, currencyto, save = False, silent = True, refresh_int
     #turn days into seconds
     refresh_interval = refresh_interval * 86400
     filename = currencyfrom + '_to_' + currencyto + '.csv'
-    if not os.path.isfile(filename):
-        data = download_data(currencyfrom, currencyto, save, silent)
-    print(bool(math.floor(((time.time() - creation_date(filename)) / refresh_interval ))))
-    if bool(math.floor(((time.time() - creation_date(filename)) / refresh_interval ))):
+
+    if not os.path.isfile(filename) or bool(math.floor(((time.time() - creation_date(filename)) / refresh_interval )) ):
         if not silent:
             print('Download of ' + filename + ' triggered.')
         data = download_data(currencyfrom, currencyto, save, silent)
+    else:
+        data = pd.DataFrame.from_csv(filename , sep='\t', encoding='utf-8')
+    data.columns= [currencyto]
     return data
 
 def lin_reg_predict(currencyfrom, currencyto, forecast_out, save_ds = False,savemodel = False, silent = True, cache = True,
